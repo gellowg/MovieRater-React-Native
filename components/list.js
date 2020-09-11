@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import {Text, View, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar, ScrollView} from 'react-native';
+import {Text, View, StyleSheet, FlatList, TouchableOpacity, Image, StatusBar, ScrollView, AsyncStorage, Alert} from 'react-native';
 import Detail from "./detail";
 import { API } from '../api-service'
 
 export default function MovieList(props) {
+    const movies = props.navigation.getParam('movie', null)
 
-    const [movies, setMovies] = useState([])
+
 
     useEffect(() => {
         API.getMovies()
-            .then( resp => resp.json())
-            .then( jsonResp => setMovies(jsonResp) )
-    }, [])
+            .then(resp => resp.json())
+            .then(jsonResp => props.navigation.navigate('MovieList', {movie: jsonResp}))
+    }, []);
+
 
     const movieClicked = (movie) => {
         props.navigation.navigate('Detail', {movie: movie})
@@ -19,18 +21,16 @@ export default function MovieList(props) {
 
     return (
         <View style={styles.back}>
-            <StatusBar barStyle={'light-content'} />
-            <Image source={require('../assets/mr_logo.png')} style={{
-                width: '70%', height: 60, marginTop: 30, marginLeft: 'auto', marginRight: 'auto'}} />
+            <StatusBar barStyle={'light-content'}/>
             <ScrollView>
-            <Text style={styles.Heading}>Movies</Text>
-            <FlatList data={movies} renderItem={({item}) => (
-                <TouchableOpacity onPress={() => movieClicked(item)} >
-                <View style={styles.item}>
-                <Text style={styles.itemText}>{item.title}</Text>
-                </View>
-                </TouchableOpacity>
-            )} keyExtractor={(item, index) => index.toString() }  />
+                <Text style={styles.Heading}>Movies</Text>
+                <FlatList data={movies} renderItem={({item}) => (
+                    <TouchableOpacity onPress={() => movieClicked(item)}>
+                        <View style={styles.item}>
+                            <Text style={styles.itemText}>{item.title}</Text>
+                        </View>
+                    </TouchableOpacity>
+                )} keyExtractor={(item, index) => index.toString()}/>
             </ScrollView>
         </View>
     );
@@ -38,9 +38,18 @@ export default function MovieList(props) {
 
 MovieList.navigationOptions = screenProps => ({
     title: '',
-    headerShown: false,
+    headerStyle: {
+        backgroundColor: '#282C35',
+        shadowOpacity: 0,
+    },
+    headerTintColor: 'white',
+    shadowColor: 'transparent',
+    headerRight: (
+        <TouchableOpacity onPress={() => screenProps.navigation.navigate('Edit', {movie: screenProps.navigation.navigate("Edit", {movie: {title: '', description: ''}})}) } >
+            <Image source={require('../assets/plusWhite.png')} style={{width: 25, height: 25, right: 20 }} />
+        </TouchableOpacity>
+    )
 })
-
 
 const styles = StyleSheet.create({
     container: {
@@ -72,9 +81,9 @@ const styles = StyleSheet.create({
     Heading: {
         color: 'white',
         fontWeight: '800',
-        marginLeft: 30,
         fontSize: 38,
         marginTop: 10,
         borderColor: 'white',
+        left: 30
     }
 })

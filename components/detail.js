@@ -15,8 +15,22 @@ export default function Detail(props) {
     const [starSelection, setStarSelection] = useState(0)
     const [sing, setSing] = useState('stars')
 
+    const rateClicked = (id, rate) => evt => {
+        API.rateMovie(id, rate)
+            .then(Alert.alert(`Rating Updated to ${starSelection} ${sing}.`))
+            .then(() => getDetails())
+            .then(setModalVisible(false))
+    }
+
+    const getDetails = () => {
+        API.getSpecificMovie(movie.id)
+            .then(resp => props.navigation.navigate('Detail', {movie: resp}))
+    }
 
 
+    useEffect(() => {
+
+    }, [])
 
 
 
@@ -60,23 +74,7 @@ export default function Detail(props) {
                             <TouchableWithoutFeedback onPress={() => setStarSelection(5)} >{ starSelection > 4 ? <Image source={require('../assets/yellowFillStar.png')} style={{height: 40, width: 40}}/> : <Image source={require('../assets/whiteOutlineStar.png')} style={{height: 40, width: 40}}/> }</TouchableWithoutFeedback>
                         </View>
                         <Text>
-                        <TouchableOpacity onPress={() => {
-                            if (starSelection < 1) {
-                                Alert.alert("Nope.", 'You have to at least rate 1 star.')
-                            }else {
-                                if (starSelection == 1){setSing('star')}else {setSing('stars')}
-                                API.rateMovie(movie.id, starSelection)
-                                .then(Alert.alert(`Rating Updated to ${starSelection} ${sing}.`))
-                                    .then(
-                                        API.getSpecificMovie(movie.id)
-                                            .then(resp => props.navigation.navigate('Detail', {movie: resp}) )
-
-                                    )
-
-
-                                setModalVisible(!modalVisible)
-                            }
-                        }}>
+                        <TouchableOpacity onPress={rateClicked(movie.id, starSelection)}>
                             <Text style={styles.modalButton}>Save</Text>
                         </TouchableOpacity>
                             <Text>    </Text>
